@@ -5,6 +5,7 @@ function App() {
   const [files, setFiles] = useState([]);
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [progress, setProgress] = useState(0);
 
   const handleFileChange = (e) => {
     setFiles(e.target.files);
@@ -22,7 +23,17 @@ function App() {
 
       const response = await axios.post(
         "http://localhost:5000/api/upload",
-        formData
+        formData,
+        {
+          onUploadProgress: (progressEvent) => {
+            const percent = Math.round(
+              (progressEvent.loaded * 100) /
+              progressEvent.total
+            );
+
+            setProgress(percent);
+          },
+        }
       );
 
       alert(response.data.message);
@@ -30,18 +41,25 @@ function App() {
       setUploadedFiles(response.data.files);
 
       setLoading(false);
+
+      setProgress(0);
     } catch (error) {
       console.log(error);
 
       setLoading(false);
 
-      alert("Upload Failed");
+      setProgress(0);
+
+      alert(
+        error.response?.data?.message ||
+        "Only PDF files are allowed"
+      );
     }
   };
 
   return (
     <div className="min-h-screen bg-[#f8fbff] flex items-center justify-center p-10">
-      <div className="bg-white p-10 rounded-2xl shadow-lg w-[600px]">
+      <div className="bg-white p-10 rounded-2xl shadow-lg w-[650px]">
         <h1 className="text-3xl font-bold text-blue-600 mb-6 text-center">
           Document Upload Dashboard
         </h1>
@@ -49,6 +67,7 @@ function App() {
         <input
           type="file"
           multiple
+          accept=".pdf"
           onChange={handleFileChange}
           className="mb-6 w-full border p-3 rounded-lg"
         />
@@ -59,6 +78,27 @@ function App() {
         >
           {loading ? "Uploading..." : "Upload Files"}
         </button>
+
+        {loading && (
+          <div className="mt-6">
+            <div className="flex justify-between mb-2">
+              <span className="text-sm font-medium text-blue-600">
+                Upload Progress
+              </span>
+
+              <span className="text-sm font-medium text-blue-600">
+                {progress}%
+              </span>
+            </div>
+
+            <div className="w-full bg-gray-200 rounded-full h-4">
+              <div
+                className="bg-blue-600 h-4 rounded-full transition-all duration-300"
+                style={{ width: `${progress}%` }}
+              ></div>
+            </div>
+          </div>
+        )}
 
         <div className="mt-8">
           <h2 className="text-xl font-semibold mb-4">
