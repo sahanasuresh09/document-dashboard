@@ -64,13 +64,27 @@ function App() {
           Document Upload Dashboard
         </h1>
 
-        <input
-          type="file"
-          multiple
-          accept=".pdf"
-          onChange={handleFileChange}
-          className="mb-6 w-full border p-3 rounded-lg"
-        />
+        <label className="border-2 border-dashed border-blue-400 rounded-xl p-10 flex flex-col items-center justify-center cursor-pointer mb-6 hover:bg-blue-50 transition">
+          <p className="text-lg font-medium text-blue-600 mb-2">
+            Drag & Drop PDF Files Here
+          </p>
+
+          <p className="text-sm text-gray-500 mb-4">
+            or click to browse files
+          </p>
+
+          <input
+            type="file"
+            multiple
+            accept=".pdf"
+            onChange={handleFileChange}
+            className="hidden"
+          />
+
+          <span className="bg-blue-600 text-white px-4 py-2 rounded-lg">
+            Choose PDFs
+          </span>
+        </label>
 
         <button
           onClick={handleUpload}
@@ -123,6 +137,10 @@ function App() {
 
                     <p className="text-sm text-gray-500">
                       {(file.size / 1024).toFixed(2)} KB
+                    </p>
+
+                    <p className="text-sm text-gray-400">
+                      Uploaded at: {new Date().toLocaleTimeString()}
                     </p>
                   </div>
 
