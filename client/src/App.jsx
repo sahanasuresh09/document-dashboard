@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 
 function App() {
@@ -7,6 +7,23 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [message, setMessage] = useState("");
+  const [search, setSearch] = useState("");
+
+  useEffect(() => {
+    fetchFiles();
+  }, []);
+
+  const fetchFiles = async () => {
+    try {
+      const response = await axios.get(
+        "http://localhost:5000/api/upload"
+      );
+
+      setUploadedFiles(response.data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   const handleFileChange = (e) => {
     setFiles(Array.from(e.target.files));
@@ -14,6 +31,14 @@ function App() {
 
   const clearFiles = () => {
     setUploadedFiles([]);
+  };
+
+  const deleteFile = (indexToDelete) => {
+    const updatedFiles = uploadedFiles.filter(
+      (_, index) => index !== indexToDelete
+    );
+
+    setUploadedFiles(updatedFiles);
   };
 
   const handleUpload = async () => {
@@ -43,7 +68,7 @@ function App() {
 
       setMessage("Files uploaded successfully");
 
-      setUploadedFiles(response.data.files);
+      fetchFiles();
 
       setLoading(false);
 
@@ -62,9 +87,15 @@ function App() {
     }
   };
 
+  const filteredFiles = uploadedFiles.filter((file) =>
+    file.originalname
+      .toLowerCase()
+      .includes(search.toLowerCase())
+  );
+
   return (
     <div className="min-h-screen bg-[#f8fbff] flex items-center justify-center p-10">
-      <div className="bg-white p-10 rounded-2xl shadow-lg w-[700px]">
+      <div className="bg-white p-10 rounded-2xl shadow-lg w-[750px]">
         <h1 className="text-3xl font-bold text-blue-600 mb-6 text-center">
           Document Upload Dashboard
         </h1>
@@ -176,13 +207,21 @@ function App() {
             </div>
           </div>
 
-          {uploadedFiles.length === 0 ? (
+          <input
+            type="text"
+            placeholder="Search uploaded files..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full border p-3 rounded-lg mb-4"
+          />
+
+          {filteredFiles.length === 0 ? (
             <p className="text-gray-500">
-              No files uploaded yet
+              No matching files found
             </p>
           ) : (
             <div className="space-y-3">
-              {uploadedFiles.map((file, index) => (
+              {filteredFiles.map((file, index) => (
                 <div
                   key={index}
                   className="border p-4 rounded-lg flex justify-between items-center"
@@ -197,13 +236,23 @@ function App() {
                     </p>
 
                     <p className="text-sm text-gray-400">
-                      Uploaded at: {new Date().toLocaleTimeString()}
+                      Uploaded at:{" "}
+                      {new Date(file.createdAt).toLocaleTimeString()}
                     </p>
                   </div>
 
-                  <span className="text-green-600 font-semibold">
-                    Uploaded
-                  </span>
+                  <div className="flex items-center gap-4">
+                    <span className="text-green-600 font-semibold">
+                      Uploaded
+                    </span>
+
+                    <button
+                      onClick={() => deleteFile(index)}
+                      className="bg-red-500 text-white px-3 py-1 rounded-lg hover:bg-red-600 transition"
+                    >
+                      Delete
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
