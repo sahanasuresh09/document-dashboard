@@ -6,9 +6,14 @@ function App() {
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [message, setMessage] = useState("");
 
   const handleFileChange = (e) => {
-    setFiles(e.target.files);
+    setFiles(Array.from(e.target.files));
+  };
+
+  const clearFiles = () => {
+    setUploadedFiles([]);
   };
 
   const handleUpload = async () => {
@@ -36,7 +41,7 @@ function App() {
         }
       );
 
-      alert(response.data.message);
+      setMessage("Files uploaded successfully");
 
       setUploadedFiles(response.data.files);
 
@@ -50,7 +55,7 @@ function App() {
 
       setProgress(0);
 
-      alert(
+      setMessage(
         error.response?.data?.message ||
         "Only PDF files are allowed"
       );
@@ -59,10 +64,16 @@ function App() {
 
   return (
     <div className="min-h-screen bg-[#f8fbff] flex items-center justify-center p-10">
-      <div className="bg-white p-10 rounded-2xl shadow-lg w-[650px]">
+      <div className="bg-white p-10 rounded-2xl shadow-lg w-[700px]">
         <h1 className="text-3xl font-bold text-blue-600 mb-6 text-center">
           Document Upload Dashboard
         </h1>
+
+        {message && (
+          <div className="mb-6 bg-green-100 text-green-700 p-4 rounded-lg text-center font-medium">
+            {message}
+          </div>
+        )}
 
         <label className="border-2 border-dashed border-blue-400 rounded-xl p-10 flex flex-col items-center justify-center cursor-pointer mb-6 hover:bg-blue-50 transition">
           <p className="text-lg font-medium text-blue-600 mb-2">
@@ -85,6 +96,37 @@ function App() {
             Choose PDFs
           </span>
         </label>
+
+        {files.length > 0 && (
+          <div className="mb-6">
+            <h2 className="text-lg font-semibold mb-3">
+              Selected Files
+            </h2>
+
+            <div className="space-y-2">
+              {files.map((file, index) => (
+                <div
+                  key={index}
+                  className="border rounded-lg p-3 flex justify-between items-center"
+                >
+                  <div>
+                    <p className="font-medium">
+                      {file.name}
+                    </p>
+
+                    <p className="text-sm text-gray-500">
+                      {(file.size / 1024).toFixed(2)} KB
+                    </p>
+                  </div>
+
+                  <span className="text-blue-600 text-sm">
+                    Ready
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         <button
           onClick={handleUpload}
@@ -115,9 +157,24 @@ function App() {
         )}
 
         <div className="mt-8">
-          <h2 className="text-xl font-semibold mb-4">
-            Uploaded Files
-          </h2>
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-semibold">
+              Uploaded Files
+            </h2>
+
+            <div className="flex items-center gap-3">
+              <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm font-medium">
+                {uploadedFiles.length} Files
+              </span>
+
+              <button
+                onClick={clearFiles}
+                className="bg-red-100 text-red-600 px-3 py-1 rounded-lg text-sm font-medium hover:bg-red-200 transition"
+              >
+                Clear
+              </button>
+            </div>
+          </div>
 
           {uploadedFiles.length === 0 ? (
             <p className="text-gray-500">
